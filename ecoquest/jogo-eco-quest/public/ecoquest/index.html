@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>EcoQuest — Aventura pelo Planeta</title>
+  <meta name="description" content="Jogo educativo de aventura em pixel art: explore biomas brasileiros, complete missões ecológicas, proteja animais e veja o mundo se recuperar.">
+  <meta name="theme-color" content="#0e1916">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-screen="title">
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <header id="hud" class="hud" hidden>
+    <div class="hud-player">
+      <canvas id="hud-avatar" class="hud-avatar" width="16" height="16" aria-hidden="true"></canvas>
+      <div class="hud-id">
+        <span id="hud-name" class="hud-name">Explorador</span>
+        <span class="hud-level-row">
+          <span id="hud-level" class="hud-level">Nv 1</span>
+          <span id="hud-xpbar" class="xpbar" role="progressbar" aria-label="Experiência para o próximo nível" aria-valuemin="0" aria-valuenow="0" aria-valuemax="100">
+            <span id="hud-xp-fill" class="xpbar-fill"></span>
+          </span>
+          <span id="hud-xp-text" class="hud-xp-text">0/100 XP</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="hud-stats">
+      <span class="hud-stat" title="Sementes">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="4" y="0" width="2" height="1"/><rect x="2" y="1" width="4" height="1"/><rect x="1" y="2" width="5" height="1"/><rect x="1" y="3" width="4" height="1"/><rect x="6" y="3" width="1" height="1"/><rect x="0" y="4" width="4" height="1"/><rect x="5" y="4" width="1" height="1"/><rect x="0" y="5" width="3" height="1"/><rect x="4" y="5" width="1" height="1"/><rect x="2" y="6" width="1" height="1"/><rect x="1" y="7" width="1" height="1"/></svg>
+        <b id="hud-seeds">0</b><span class="sr-only"> sementes</span>
+      </span>
+      <span class="hud-stat" title="Fichas de animais">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="1" height="1"/><rect x="5" y="0" width="1" height="1"/><rect x="1" y="1" width="2" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="0" y="3" width="1" height="1"/><rect x="3" y="3" width="2" height="1"/><rect x="7" y="3" width="1" height="1"/><rect x="2" y="4" width="4" height="1"/><rect x="1" y="5" width="6" height="2"/><rect x="2" y="7" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/></svg>
+        <b id="hud-animals">0/29</b><span class="sr-only"> fichas de animais</span>
+      </span>
+    </div>
+
+    <nav class="hud-nav" aria-label="Navegação do jogo">
+      <button type="button" class="nav-btn" data-nav="map">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="4" height="1"/><rect x="1" y="1" width="2" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="1"/><rect x="6" y="2" width="1" height="1"/><rect x="1" y="3" width="2" height="1"/><rect x="5" y="3" width="2" height="1"/><rect x="2" y="4" width="4" height="1"/><rect x="3" y="5" width="2" height="2"/></svg>
+        <span>Mapa</span>
+      </button>
+      <button type="button" class="nav-btn" data-nav="encyclopedia">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="6" height="1"/><rect x="0" y="1" width="1" height="5"/><rect x="5" y="1" width="2" height="5"/><rect x="2" y="2" width="2" height="1"/><rect x="2" y="4" width="2" height="1"/><rect x="0" y="6" width="6" height="1"/></svg>
+        <span>Enciclopédia</span>
+        <span id="hud-new-animals" class="nav-badge" hidden>0</span>
+      </button>
+      <button type="button" class="nav-btn" data-nav="profile">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="4" height="3"/><rect x="3" y="3" width="2" height="1"/><rect x="1" y="4" width="6" height="1"/><rect x="0" y="5" width="8" height="2"/></svg>
+        <span>Perfil</span>
+      </button>
+      <button type="button" class="nav-btn icon-only" id="btn-settings" aria-label="Configurações">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="3" y="0" width="2" height="1"/><rect x="1" y="1" width="6" height="1"/><rect x="1" y="2" width="2" height="1"/><rect x="5" y="2" width="2" height="1"/><rect x="0" y="3" width="3" height="2"/><rect x="5" y="3" width="3" height="2"/><rect x="1" y="5" width="2" height="1"/><rect x="5" y="5" width="2" height="1"/><rect x="1" y="6" width="6" height="1"/><rect x="3" y="7" width="2" height="1"/></svg>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <!-- TELA INICIAL -->
+    <section id="screen-title" class="screen screen-title active" aria-labelledby="game-title">
+      <div class="title-bg" aria-hidden="true">
+        <img src="images/title-bg.jpg" alt="" class="title-img" id="title-img">
+      </div>
+      <div class="title-content">
+        <p class="title-kicker">Um jogo educativo de aventura</p>
+        <h1 id="game-title" class="logo">
+          <span class="logo-main">EcoQuest</span>
+          <span class="logo-sub">Aventura pelo Planeta</span>
+        </h1>
+        <p class="title-pitch">Explore cinco biomas brasileiros, cumpra missões, proteja animais reais e veja a natureza renascer a cada passo.</p>
+        <p id="title-welcome" class="title-welcome" hidden></p>
+        <div class="title-menu">
+          <button type="button" id="btn-start" class="btn btn-primary btn-big">Iniciar aventura</button>
+          <div class="title-menu-row">
+            <button type="button" id="btn-howto" class="btn btn-ghost">Como jogar</button>
+            <button type="button" id="btn-title-settings" class="btn btn-ghost">Configurações</button>
+          </div>
+        </div>
+        <p class="press-start" aria-hidden="true">Setas / WASD para andar · E para interagir</p>
+      </div>
+      <p class="title-footer">Progresso salvo apenas neste navegador · Sem cadastro, sem servidor</p>
+    </section>
+
+    <!-- MAPA DO MUNDO -->
+    <section id="screen-map" class="screen screen-map" hidden aria-labelledby="map-title">
+      <div class="screen-head">
+        <div>
+          <p class="eyebrow">Mapa do mundo</p>
+          <h2 id="map-title" class="screen-title-text">Escolha uma região</h2>
+        </div>
+        <div class="planet-progress">
+          <span class="meter big"><span id="planet-progress-fill" class="meter-fill"></span></span>
+          <span id="planet-progress-text" class="small">0% do planeta restaurado</span>
+        </div>
+      </div>
+      <div id="map-board" class="map-board"></div>
+      <p class="map-legend">
+        <span><span class="legend-dot pending"></span> Missão pendente</span>
+        <span><span class="legend-dot done"></span> Missão concluída</span>
+        <span>As miniaturas mostram o estado real de cada região.</span>
+      </p>
+    </section>
+
+    <!-- MUNDO EXPLORÁVEL -->
+    <section id="screen-world" class="screen screen-world" hidden aria-label="Região em exploração">
+      <canvas id="world-canvas" class="world-canvas" tabindex="0" aria-label="Mundo do jogo. Use as setas ou WASD para andar e E para interagir."></canvas>
+
+      <div class="world-hud-top">
+        <div class="world-panel">
+          <h2 id="world-region-name" class="world-region">Região</h2>
+          <span class="meter"><span id="world-restore-fill" class="meter-fill"></span></span>
+          <span id="world-restore-text" class="small">0% restaurada</span>
+        </div>
+        <div class="world-buttons">
+          <button type="button" id="btn-world-help" class="btn btn-small btn-ghost">Ajuda</button>
+          <button type="button" id="btn-world-back" class="btn btn-small">Voltar ao mapa</button>
+        </div>
+      </div>
+
+      <div id="world-tracker" class="world-tracker" hidden role="img" aria-label="Rastreador">
+        <span class="tracker-label">Rastreador</span>
+        <span class="bars"><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span></span>
+      </div>
+
+      <p id="world-prompt" class="world-prompt" hidden aria-live="polite"></p>
+
+      <div class="world-controls">
+        <div class="dpad" aria-label="Direcional">
+          <button type="button" class="dpad-btn up" data-dir="up" aria-label="Andar para cima"><span aria-hidden="true">&#9650;</span></button>
+          <button type="button" class="dpad-btn left" data-dir="left" aria-label="Andar para a esquerda"><span aria-hidden="true">&#9664;</span></button>
+          <button type="button" class="dpad-btn right" data-dir="right" aria-label="Andar para a direita"><span aria-hidden="true">&#9654;</span></button>
+          <button type="button" class="dpad-btn down" data-dir="down" aria-label="Andar para baixo"><span aria-hidden="true">&#9660;</span></button>
+        </div>
+        <button type="button" id="btn-action" class="action-btn" disabled>Ação<span class="sr-only"> (falar com o guia)</span></button>
+      </div>
+    </section>
+
+    <!-- ENCICLOPÉDIA -->
+    <section id="screen-encyclopedia" class="screen screen-encyclopedia" hidden aria-labelledby="enc-title">
+      <div class="screen-head">
+        <div>
+          <p class="eyebrow">Diário de campo</p>
+          <h2 id="enc-title" class="screen-title-text">Enciclopédia da fauna</h2>
+        </div>
+        <p id="encyclopedia-count" class="small">0 fichas</p>
+      </div>
+      <div class="filters" role="search">
+        <label class="field grow">
+          <span>Buscar por nome</span>
+          <input id="filter-search" type="search" placeholder="Ex.: onça, Panthera..." autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Grupo</span>
+          <select id="filter-group"><option value="all">Todos os grupos</option></select>
+        </label>
+        <label class="field">
+          <span>Habitat</span>
+          <select id="filter-habitat"><option value="all">Todos os habitats</option></select>
+        </label>
+        <label class="check">
+          <input id="filter-unlocked" type="checkbox">
+          <span>Só desbloqueados</span>
+        </label>
+      </div>
+      <div id="animal-grid" class="animal-grid"></div>
+    </section>
+
+    <!-- PERFIL -->
+    <section id="screen-profile" class="screen screen-profile" hidden aria-labelledby="profile-name">
+      <div class="profile-layout">
+        <div class="panel profile-card">
+          <canvas id="profile-avatar" class="profile-avatar" width="16" height="16" aria-hidden="true"></canvas>
+          <h2 id="profile-name" class="screen-title-text">Explorador</h2>
+          <p id="profile-role" class="small">Nível 1</p>
+          <span class="meter big"><span id="profile-xp-fill" class="meter-fill xp"></span></span>
+          <p id="profile-xp-text" class="small"></p>
+          <div class="profile-actions">
+            <button type="button" id="btn-edit-profile" class="btn btn-small">Editar perfil</button>
+            <button type="button" id="btn-export" class="btn btn-small btn-ghost">Exportar save</button>
+            <button type="button" id="btn-profile-settings" class="btn btn-small btn-ghost">Configurações</button>
+            <button type="button" id="btn-title" class="btn btn-small btn-ghost">Tela inicial</button>
+          </div>
+          <p id="storage-note" class="note"></p>
+        </div>
+
+        <div class="profile-main">
+          <div class="panel">
+            <h3 class="section-title">Estatísticas</h3>
+            <dl id="profile-stats" class="stats-grid"></dl>
+          </div>
+          <div class="panel">
+            <h3 class="section-title">Progresso por categoria</h3>
+            <ul id="profile-categories" class="cat-list"></ul>
+          </div>
+          <div class="panel">
+            <h3 class="section-title">Conquistas <span id="achievements-count" class="small"></span></h3>
+            <ul id="achievement-list" class="achievement-list"></ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="modal" class="modal" aria-label="Janela">
+    <div class="modal-frame">
+      <button type="button" id="modal-close" class="modal-close" aria-label="Fechar janela">
+        <svg class="px-icon" viewBox="0 0 8 8" fill="currentColor" shape-rendering="crispEdges" aria-hidden="true"><rect x="1" y="1" width="2" height="1"/><rect x="5" y="1" width="2" height="1"/><rect x="2" y="2" width="2" height="1"/><rect x="4" y="2" width="2" height="1"/><rect x="3" y="3" width="2" height="2"/><rect x="2" y="5" width="2" height="1"/><rect x="4" y="5" width="2" height="1"/><rect x="1" y="6" width="2" height="1"/><rect x="5" y="6" width="2" height="1"/></svg>
+      </button>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="fx" class="fx" aria-hidden="true"></div>
+
+  <noscript>
+    <p class="noscript">O EcoQuest precisa de JavaScript ativado para funcionar.</p>
+  </noscript>
+
+  <script src="js/storage.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/minigames.js"></script>
+  <script src="js/missions.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/encyclopedia.js"></script>
+  <script src="js/profile.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
